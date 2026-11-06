@@ -60,7 +60,7 @@ curl -fsSL https://github.com/andreevmoscow/kotobot/archive/refs/heads/main.tar.
 4. Затем попросит username — он должен заканчиваться на `bot`,
    например `my_kotobot_bot`. Если занято — придумайте другой.
 5. BotFather пришлёт сообщение с токеном вида
-   `123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`.
+   `123456789:AAH...` (дальше идут буквы и цифры — у каждого свои).
    Нажмите на токен, чтобы скопировать.
 6. Вернитесь в терминал и вставьте его (символы не отобразятся) → **Enter**.
 
