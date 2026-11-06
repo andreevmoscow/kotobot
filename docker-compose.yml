@@ -1,0 +1,19 @@
+services:
+  kotobot:
+    build:
+      context: .
+    image: kotobot:latest
+    container_name: kotobot
+    restart: unless-stopped
+    env_file:
+      - .env
+      - bot.env
+    environment:
+      TZ: ${TZ:-Europe/Moscow}
+    volumes:
+      - ./data:/app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
