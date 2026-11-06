@@ -9,13 +9,21 @@
 
 ## Быстрый старт
 
+Репозиторий публичный — аккаунт GitHub не нужен. Нужен сервер с Ubuntu/Debian и root.
+
+**Одной командой, без git:**
+
 ```bash
-git clone https://github.com/<ваш-логин>/kotobot.git
-cd kotobot
-sudo bash install.sh
+curl -fsSL https://github.com/andreevmoscow/kotobot/archive/refs/heads/main.tar.gz | tar -xz && cd kotobot-main && sudo bash install.sh
 ```
 
-Установщик пошагово спросит токен, ключ TheCatAPI и id группы, поставит Docker
+**Через git:**
+
+```bash
+git clone https://github.com/andreevmoscow/kotobot.git && cd kotobot && sudo bash install.sh
+```
+
+Установщик пошагово спросит токен бота, ключ TheCatAPI и id группы, сам поставит Docker
 и запустит контейнер. Подробности — в [README-INSTALL.md](README-INSTALL.md).
 
 ## Что умеет
