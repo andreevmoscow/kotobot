@@ -8,7 +8,7 @@ import time
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Chat, Message
 
-from config import Config
+from app.chats import ChatRegistry
 
 log = logging.getLogger(__name__)
 
@@ -22,20 +22,17 @@ def event_chat(event: object) -> Chat | None:
 
 
 class AllowListMiddleware(BaseMiddleware):
-    """Пускает команды только из разрешённых чатов (если список задан)."""
+    """Пускает команды только из разрешённых чатов."""
 
-    def __init__(self, config: Config) -> None:
-        self._allowed = config.allowed_chat_ids
+    def __init__(self, chats: ChatRegistry) -> None:
+        self._chats = chats
 
     async def __call__(self, handler, event, data):
-        if not self._allowed:
-            return await handler(event, data)
-
         chat = event_chat(event)
         if chat is None:
             return await handler(event, data)
 
-        if chat.id not in self._allowed:
+        if not self._chats.allows(chat.id):
             log.info(
                 "Чат не в белом списке: id=%s type=%s title=%r",
                 chat.id,
@@ -43,7 +40,7 @@ class AllowListMiddleware(BaseMiddleware):
                 chat.title,
             )
             if isinstance(event, CallbackQuery):
-                await event.answer("Этот бот работает только в одной группе 🙃")
+                await event.answer("Этот бот работает только в разрешённых группах 🙃")
             return None
 
         return await handler(event, data)

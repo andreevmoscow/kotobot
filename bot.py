@@ -15,8 +15,10 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.exceptions import TelegramAPIError
 from aiogram.types import BotCommand
 
+from app.admin import router as admin_router
 from app.cache import FileIdCache
 from app.cats import CatService
+from app.chats import ChatRegistry
 from app.handlers import router
 from app.middlewares import AllowListMiddleware, ThrottlingMiddleware
 from config import Config
@@ -88,13 +90,11 @@ async def main() -> None:
     config = Config.from_env()
     setup_logging(config.log_level, config.log_dir)
 
-    if config.allow_all_chats:
-        log.warning(
-            "ALLOWED_CHAT_IDS пуст: бот ответит в любом чате. "
-            "Добавьте id группы в .env и перезапустите."
-        )
     if not config.thecatapi_key:
         log.warning("THE_CAT_API_KEY не задан: у TheCatAPI будет демо-лимит запросов.")
+
+    if not config.owner_ids:
+        log.warning("OWNER_IDS не задан: команды /allow и /deny отключены.")
 
     bot = Bot(token=config.bot_token, default=DefaultBotProperties())
     dp = Dispatcher()
@@ -106,14 +106,26 @@ async def main() -> None:
     )
     await cache.load()
 
+    chats = ChatRegistry(config.data_dir / "allowed_chats.json", config.allowed_chat_ids)
+    await chats.load()
+
     dp["config"] = config
     dp["cats"] = cats
     dp["cache"] = cache
+    dp["chats"] = chats
 
-    router.message.middleware(AllowListMiddleware(config))
-    router.callback_query.middleware(AllowListMiddleware(config))
+    admin_router.message.middleware(ThrottlingMiddleware(config.cooldown_seconds))
+    dp.include_router(admin_router)
+
+    router.message.middleware(AllowListMiddleware(chats))
+    router.callback_query.middleware(AllowListMiddleware(chats))
     router.message.middleware(ThrottlingMiddleware(config.cooldown_seconds))
     dp.include_router(router)
+
+    if chats.ids():
+        log.info("Разрешённые чаты: %s", ", ".join(str(chat_id) for chat_id in chats.ids()))
+    else:
+        log.warning("Список чатов пуст: бот ответит в любой группе.")
 
     # Сбрасываем вебхук и старые апдейты: после рестарта не нужно отвечать на вчерашние /cat.
     await bot.delete_webhook(drop_pending_updates=True)

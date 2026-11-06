@@ -66,6 +66,7 @@ class Config:
     data_dir: Path = Path("data")
     cache_ttl_days: int = 30
     requester_mode: str = "name"
+    owner_ids: frozenset[int] = field(default_factory=frozenset)
 
     @property
     def allow_all_chats(self) -> bool:
@@ -104,4 +105,5 @@ class Config:
                 {"off", "name", "mention"},
                 "name",
             ),
+            owner_ids=_parse_chat_ids(_env("OWNER_IDS")),
         )
