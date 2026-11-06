@@ -1,0 +1,7 @@
+.venv/
+.pkgs/
+__pycache__/
+*.py[cod]
+data/
+.env
+bot.env
